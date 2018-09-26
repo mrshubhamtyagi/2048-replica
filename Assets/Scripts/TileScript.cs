@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 public class TileScript : MonoBehaviour
 {
-    private TextMeshPro tileNumber;
+    private TextMeshProUGUI tileNumber;
     private Image tileImage;
 
     private int number;
@@ -29,10 +29,13 @@ public class TileScript : MonoBehaviour
         }
     }
 
+    public int indexRow;
+    public int indexCol;
+
     private void Awake()
     {
-        tileNumber = transform.GetChild(0).GetComponentInChildren<TextMeshPro>();
-        tileImage = transform.GetComponentInChildren<Image>();
+        tileNumber = transform.GetChild(0).GetChild(0).GetComponent<TextMeshProUGUI>();
+        tileImage = transform.GetChild(0).GetComponent<Image>();
     }
 
     private void ApplyStyleFromStyleSheet(int _index)
