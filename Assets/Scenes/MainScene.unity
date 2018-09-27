@@ -4206,7 +4206,12 @@ Prefab:
     - target: {fileID: 114268472093769272, guid: be74518a7d5b2481693e1578b096c999,
         type: 2}
       propertyPath: indexRow
-      value: 31
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 114268472093769272, guid: be74518a7d5b2481693e1578b096c999,
+        type: 2}
+      propertyPath: indexCol
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: be74518a7d5b2481693e1578b096c999, type: 2}
