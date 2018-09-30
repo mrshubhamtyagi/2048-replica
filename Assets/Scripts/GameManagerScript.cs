@@ -4,8 +4,12 @@ using UnityEngine;
 
 public class GameManagerScript : MonoBehaviour
 {
-    private TileScript[,] allTiles = new TileScript[4, 4];
-    private List<TileScript> tileList = new List<TileScript>();
+    private TileScript[,] allTiles = new TileScript[4, 4]; // all tiles
+
+    private List<TileScript[]> columns = new List<TileScript[]>(); // holds all cols details
+    private List<TileScript[]> rows = new List<TileScript[]>(); // holds all rows details
+
+    private List<TileScript> emptyTiles = new List<TileScript>();
 
     // Use this for initialization
     void Start()
@@ -15,23 +19,42 @@ public class GameManagerScript : MonoBehaviour
         {
             tile.Number = 0;
             allTiles[tile.indexRow, tile.indexCol] = tile;
-            tileList.Add(tile);
+            emptyTiles.Add(tile);
         }
+
+        AssignColumnAndRowLists();
+
     }
+
+    private void AssignColumnAndRowLists()
+    {
+        columns.Add(new TileScript[] { allTiles[0, 0], allTiles[1, 0], allTiles[2, 0], allTiles[3, 0] });
+        columns.Add(new TileScript[] { allTiles[0, 1], allTiles[1, 1], allTiles[2, 1], allTiles[3, 1] });
+        columns.Add(new TileScript[] { allTiles[0, 2], allTiles[1, 2], allTiles[2, 2], allTiles[3, 2] });
+        columns.Add(new TileScript[] { allTiles[0, 3], allTiles[1, 3], allTiles[2, 3], allTiles[3, 3] });
+
+
+        rows.Add(new TileScript[] { allTiles[0, 0], allTiles[0, 1], allTiles[0, 2], allTiles[0, 3] });
+        rows.Add(new TileScript[] { allTiles[1, 0], allTiles[1, 1], allTiles[1, 2], allTiles[1, 3] });
+        rows.Add(new TileScript[] { allTiles[2, 0], allTiles[2, 1], allTiles[2, 2], allTiles[2, 3] });
+        rows.Add(new TileScript[] { allTiles[3, 0], allTiles[3, 1], allTiles[3, 2], allTiles[3, 3] });
+    }
+
+
 
     // ----------------------------------------- Generating New Tile With a number either 2 or 4
     private void GenerateTile()
     {
-        if (tileList.Count > 0)
+        if (emptyTiles.Count > 0)
         {
             // pick index for random number tile;
-            int indexForNewNumber = Random.Range(0, tileList.Count);
+            int indexForNewNumber = Random.Range(0, emptyTiles.Count);
             int randomNumber = Random.Range(0, 10);
             if (randomNumber == 0)
-                tileList[indexForNewNumber].Number = 4; // assign 4 (only 10% chances)
+                emptyTiles[indexForNewNumber].Number = 4; // assign 4 (only 10% chances)
             else
-                tileList[indexForNewNumber].Number = 2;
-            tileList.RemoveAt(indexForNewNumber);
+                emptyTiles[indexForNewNumber].Number = 2;
+            emptyTiles.RemoveAt(indexForNewNumber);
         }
     }
 
