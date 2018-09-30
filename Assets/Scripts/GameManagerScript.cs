@@ -40,7 +40,38 @@ public class GameManagerScript : MonoBehaviour
         rows.Add(new TileScript[] { allTiles[3, 0], allTiles[3, 1], allTiles[3, 2], allTiles[3, 3] });
     }
 
+    bool MakeOneMoveDownIndex(TileScript[] _lineOfTiles)
+    {
+        // This method is called on Right or Down Arrow/Swipe
+        // search for move if available make a single move and return true else return false
+        for (int i = 0; i < _lineOfTiles.Length - 1; i++)
+        {
+            // Move Block
+            if (_lineOfTiles[i].Number == 0 && _lineOfTiles[i + 1].Number != 0) // check if move is available
+            {
+                _lineOfTiles[i].Number = _lineOfTiles[i + 1].Number; // i is the available empty tile
+                _lineOfTiles[i + 1].Number = 0;
+                return true;
+            }
+        }
+        return false;
+    }
 
+    bool MakeOneMoveUpIndex(TileScript[] _lineOfTiles)
+    {
+        // This method is called on Left or Up Arrow/Swipebool flag = false;
+        for (int i = _lineOfTiles.Length - 1; i > 0; i--)
+        {
+            // Move Block
+            if (_lineOfTiles[i].Number == 0 && _lineOfTiles[i - 1].Number != 0)
+            {
+                _lineOfTiles[i].Number = _lineOfTiles[i - 1].Number;
+                _lineOfTiles[i - 1].Number = 0;
+                return true;
+            }
+        }
+        return false;
+    }
 
     // ----------------------------------------- Generating New Tile With a number either 2 or 4
     private void GenerateTile()
@@ -65,8 +96,29 @@ public class GameManagerScript : MonoBehaviour
             GenerateTile();
     }
 
-    public void Move(MoveDirection direction)
+    public void Move(MoveDirection _direction)
     {
-        print(direction);
+        print(_direction);
+        for (int i = 0; i < rows.Count; i++)
+        {
+            switch (_direction)
+            {
+                case MoveDirection.Down:
+                    while (MakeOneMoveUpIndex(columns[i])) { }
+                    break;
+
+                case MoveDirection.Right:
+                    while (MakeOneMoveUpIndex(rows[i])) { }
+                    break;
+
+                case MoveDirection.Left:
+                    while (MakeOneMoveDownIndex(rows[i])) { }
+                    break;
+
+                case MoveDirection.Up:
+                    while (MakeOneMoveDownIndex(columns[i])) { }
+                    break;
+            }
+        }
     }
 }
