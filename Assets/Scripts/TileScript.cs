@@ -6,10 +6,9 @@ using UnityEngine.UI;
 
 public class TileScript : MonoBehaviour
 {
-    private TextMeshProUGUI tileNumber;
-    private Image tileImage;
-
-    private int number;
+    public bool hasMergedAlready = false;
+    public int indexRow;
+    public int indexCol;
     public int Number
     {
         get
@@ -29,8 +28,9 @@ public class TileScript : MonoBehaviour
         }
     }
 
-    public int indexRow;
-    public int indexCol;
+    private TextMeshProUGUI tileNumber;
+    private Image tileImage;
+    private int number;
 
     private void Awake()
     {

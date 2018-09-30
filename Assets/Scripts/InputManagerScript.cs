@@ -19,30 +19,25 @@ public class InputManagerScript : MonoBehaviour
         gameManager = FindObjectOfType<GameManagerScript>();
     }
 
-    void Start()
-    {
-
-    }
-
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.RightArrow))
         {
-            gameManager.Move(MoveDirection.Right);
+            gameManager.MoveAndMerge(MoveDirection.Right);
         }
         else if (Input.GetKeyDown(KeyCode.LeftArrow))
         {
-            gameManager.Move(MoveDirection.Left);
+            gameManager.MoveAndMerge(MoveDirection.Left);
 
         }
         else if (Input.GetKeyDown(KeyCode.UpArrow))
         {
-            gameManager.Move(MoveDirection.Up);
+            gameManager.MoveAndMerge(MoveDirection.Up);
 
         }
         else if (Input.GetKeyDown(KeyCode.DownArrow))
         {
-            gameManager.Move(MoveDirection.Down);
+            gameManager.MoveAndMerge(MoveDirection.Down);
 
         }
     }

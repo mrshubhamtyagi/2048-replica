@@ -9,11 +9,12 @@ public class GameManagerScript : MonoBehaviour
     private List<TileScript[]> columns = new List<TileScript[]>(); // holds all cols details
     private List<TileScript[]> rows = new List<TileScript[]>(); // holds all rows details
 
-    private List<TileScript> emptyTiles = new List<TileScript>();
+    private List<TileScript> emptyTiles = new List<TileScript>(); // list of empty tiles
 
     // Use this for initialization
     void Start()
     {
+        // set all tiles number's to 0 and add them to empty tiles list
         TileScript[] allTilesOnDimention = FindObjectsOfType<TileScript>();
         foreach (TileScript tile in allTilesOnDimention)
         {
@@ -23,11 +24,18 @@ public class GameManagerScript : MonoBehaviour
         }
 
         AssignColumnAndRowLists();
-
+        GenerateTile();
+        GenerateTile();
     }
 
     private void AssignColumnAndRowLists()
     {
+        //          col1    col2    col3    col4
+        // row1     0,0     0,1     0,2     0,3
+        // row2     1,0     1,1     1,2     1,3
+        // row3     2,0     2,1     2,2     2,3
+        // row4     3,0     3,1     3,2     3,3
+
         columns.Add(new TileScript[] { allTiles[0, 0], allTiles[1, 0], allTiles[2, 0], allTiles[3, 0] });
         columns.Add(new TileScript[] { allTiles[0, 1], allTiles[1, 1], allTiles[2, 1], allTiles[3, 1] });
         columns.Add(new TileScript[] { allTiles[0, 2], allTiles[1, 2], allTiles[2, 2], allTiles[3, 2] });
@@ -40,65 +48,29 @@ public class GameManagerScript : MonoBehaviour
         rows.Add(new TileScript[] { allTiles[3, 0], allTiles[3, 1], allTiles[3, 2], allTiles[3, 3] });
     }
 
-    bool MakeOneMoveDownIndex(TileScript[] _lineOfTiles)
-    {
-        // This method is called on Right or Down Arrow/Swipe
-        // search for move if available make a single move and return true else return false
-        for (int i = 0; i < _lineOfTiles.Length - 1; i++)
-        {
-            // Move Block
-            if (_lineOfTiles[i].Number == 0 && _lineOfTiles[i + 1].Number != 0) // check if move is available
-            {
-                _lineOfTiles[i].Number = _lineOfTiles[i + 1].Number; // i is the available empty tile
-                _lineOfTiles[i + 1].Number = 0;
-                return true;
-            }
-        }
-        return false;
-    }
-
-    bool MakeOneMoveUpIndex(TileScript[] _lineOfTiles)
-    {
-        // This method is called on Left or Up Arrow/Swipebool flag = false;
-        for (int i = _lineOfTiles.Length - 1; i > 0; i--)
-        {
-            // Move Block
-            if (_lineOfTiles[i].Number == 0 && _lineOfTiles[i - 1].Number != 0)
-            {
-                _lineOfTiles[i].Number = _lineOfTiles[i - 1].Number;
-                _lineOfTiles[i - 1].Number = 0;
-                return true;
-            }
-        }
-        return false;
-    }
-
     // ----------------------------------------- Generating New Tile With a number either 2 or 4
-    private void GenerateTile()
+    private bool GenerateTile()
     {
         if (emptyTiles.Count > 0)
         {
             // pick index for random number tile;
             int indexForNewNumber = Random.Range(0, emptyTiles.Count);
             int randomNumber = Random.Range(0, 10);
-            if (randomNumber == 0)
-                emptyTiles[indexForNewNumber].Number = 4; // assign 4 (only 10% chances)
+            if (randomNumber > 8) // around 20% chances
+                emptyTiles[indexForNewNumber].Number = 4;
             else
                 emptyTiles[indexForNewNumber].Number = 2;
             emptyTiles.RemoveAt(indexForNewNumber);
+            return true;
         }
+        return false;
     }
 
-    // Update is called once per frame
-    void Update()
+    #region MOVE  AND MERGE MECHANISM -----------------------------------------------------
+    public void MoveAndMerge(MoveDirection _direction)
     {
-        if (Input.GetKeyDown(KeyCode.Space))
-            GenerateTile();
-    }
-
-    public void Move(MoveDirection _direction)
-    {
-        print(_direction);
+        ResetMergeTags();
+        GenerateTile();
         for (int i = 0; i < rows.Count; i++)
         {
             switch (_direction)
@@ -120,5 +92,71 @@ public class GameManagerScript : MonoBehaviour
                     break;
             }
         }
+    }
+
+
+    bool MakeOneMoveDownIndex(TileScript[] _lineOfTiles)
+    {
+        // This method is called on Right or Down Arrow/Swipe
+        // search for move if available make a single move and return true else return false
+        for (int i = 0; i < _lineOfTiles.Length - 1; i++)
+        {
+            // MOVE BLOCK
+            if (_lineOfTiles[i].Number == 0 && _lineOfTiles[i + 1].Number != 0) // check if move is available
+            {
+                _lineOfTiles[i].Number = _lineOfTiles[i + 1].Number; // i is the available empty tile
+                _lineOfTiles[i + 1].Number = 0;
+                return true;
+            }
+
+            // MERGE BLOCK
+            if (_lineOfTiles[i].Number != 0 && _lineOfTiles[i + 1].Number != 0
+                && _lineOfTiles[i].Number == _lineOfTiles[i + 1].Number
+                && !_lineOfTiles[i].hasMergedAlready
+                && !_lineOfTiles[i + 1].hasMergedAlready)
+            {
+                _lineOfTiles[i].Number *= 2;
+                _lineOfTiles[i].hasMergedAlready = true;
+                _lineOfTiles[i + 1].Number = 0;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool MakeOneMoveUpIndex(TileScript[] _lineOfTiles)
+    {
+        // This method is called on Left or Up Arrow/Swipe
+        // search for move if available make a single move and return true else return false
+        for (int i = _lineOfTiles.Length - 1; i > 0; i--)
+        {
+            // Move Block
+            if (_lineOfTiles[i].Number == 0 && _lineOfTiles[i - 1].Number != 0)
+            {
+                _lineOfTiles[i].Number = _lineOfTiles[i - 1].Number;
+                _lineOfTiles[i - 1].Number = 0;
+                return true;
+            }
+
+            // MERGE BLOCK
+            if (_lineOfTiles[i].Number == 0 && _lineOfTiles[i - 1].Number != 0
+                && _lineOfTiles[i].Number == _lineOfTiles[i - 1].Number
+                && !_lineOfTiles[i].hasMergedAlready
+                && !_lineOfTiles[i - 1].hasMergedAlready)
+            {
+                _lineOfTiles[i].Number *= 2;
+                _lineOfTiles[i].hasMergedAlready = true;
+                _lineOfTiles[i - 1].Number = 0;
+                return true;
+            }
+        }
+        return false;
+    }
+    #endregion
+
+    private void ResetMergeTags()
+    {
+        foreach (TileScript tile in allTiles)
+            tile.hasMergedAlready = false;
     }
 }
