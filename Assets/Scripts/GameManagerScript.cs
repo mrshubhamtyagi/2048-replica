@@ -74,7 +74,7 @@ public class GameManagerScript : MonoBehaviour
             if (tile.Number == 0)
                 emptyTiles.Add(tile);
         }
-
+        print("Empty Tiles ---->> " + emptyTiles.Count);
         if (emptyTiles.Count == 0)
             print("Game Over");
     }
@@ -83,7 +83,7 @@ public class GameManagerScript : MonoBehaviour
     public void MoveAndMerge(MoveDirection _direction)
     {
         bool moveMade = false;
-
+        ResetMergeTags();
         for (int i = 0; i < rows.Count; i++)
         {
             switch (_direction)
@@ -105,10 +105,11 @@ public class GameManagerScript : MonoBehaviour
                     break;
             }
         }
-        ResetMergeTags();
-        UpdateEmptyTiles();
         if (moveMade)
+        {
+            UpdateEmptyTiles();
             GenerateTile();
+        }
     }
 
 
@@ -133,8 +134,8 @@ public class GameManagerScript : MonoBehaviour
                 && !_lineOfTiles[i + 1].hasMergedAlready)
             {
                 _lineOfTiles[i].Number *= 2;
-                _lineOfTiles[i].hasMergedAlready = true;
                 _lineOfTiles[i + 1].Number = 0;
+                _lineOfTiles[i].hasMergedAlready = true;
                 return true;
             }
         }
@@ -156,14 +157,14 @@ public class GameManagerScript : MonoBehaviour
             }
 
             // MERGE BLOCK
-            if (_lineOfTiles[i].Number == 0 && _lineOfTiles[i - 1].Number != 0
+            if (_lineOfTiles[i].Number != 0 && _lineOfTiles[i - 1].Number != 0
                 && _lineOfTiles[i].Number == _lineOfTiles[i - 1].Number
                 && !_lineOfTiles[i].hasMergedAlready
                 && !_lineOfTiles[i - 1].hasMergedAlready)
             {
                 _lineOfTiles[i].Number *= 2;
-                _lineOfTiles[i].hasMergedAlready = true;
                 _lineOfTiles[i - 1].Number = 0;
+                _lineOfTiles[i].hasMergedAlready = true;
                 return true;
             }
         }
