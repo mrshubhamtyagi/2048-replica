@@ -82,30 +82,33 @@ public class GameManagerScript : MonoBehaviour
     #region MOVE  AND MERGE MECHANISM -----------------------------------------------------
     public void MoveAndMerge(MoveDirection _direction)
     {
+        bool moveMade = false;
+
         for (int i = 0; i < rows.Count; i++)
         {
             switch (_direction)
             {
                 case MoveDirection.Down:
-                    while (MakeOneMoveUpIndex(columns[i])) { }
+                    while (MakeOneMoveUpIndex(columns[i])) { moveMade = true; }
                     break;
 
                 case MoveDirection.Right:
-                    while (MakeOneMoveUpIndex(rows[i])) { }
+                    while (MakeOneMoveUpIndex(rows[i])) { moveMade = true; }
                     break;
 
                 case MoveDirection.Left:
-                    while (MakeOneMoveDownIndex(rows[i])) { }
+                    while (MakeOneMoveDownIndex(rows[i])) { moveMade = true; }
                     break;
 
                 case MoveDirection.Up:
-                    while (MakeOneMoveDownIndex(columns[i])) { }
+                    while (MakeOneMoveDownIndex(columns[i])) { moveMade = true; }
                     break;
             }
         }
         ResetMergeTags();
         UpdateEmptyTiles();
-        GenerateTile();
+        if (moveMade)
+            GenerateTile();
     }
 
 
