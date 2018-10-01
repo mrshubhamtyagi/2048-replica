@@ -66,11 +66,22 @@ public class GameManagerScript : MonoBehaviour
         return false;
     }
 
+    private void UpdateEmptyTiles()
+    {
+        emptyTiles.Clear();
+        foreach (TileScript tile in allTiles)
+        {
+            if (tile.Number == 0)
+                emptyTiles.Add(tile);
+        }
+
+        if (emptyTiles.Count == 0)
+            print("Game Over");
+    }
+
     #region MOVE  AND MERGE MECHANISM -----------------------------------------------------
     public void MoveAndMerge(MoveDirection _direction)
     {
-        ResetMergeTags();
-        GenerateTile();
         for (int i = 0; i < rows.Count; i++)
         {
             switch (_direction)
@@ -92,6 +103,9 @@ public class GameManagerScript : MonoBehaviour
                     break;
             }
         }
+        ResetMergeTags();
+        UpdateEmptyTiles();
+        GenerateTile();
     }
 
 
