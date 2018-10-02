@@ -21,24 +21,28 @@ public class InputManagerScript : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.RightArrow))
+        if (GameManagerScript.INSTANCE.state == GameState.Playing) // Checking game state == playing
         {
-            gameManager.MoveAndMerge(MoveDirection.Right);
-        }
-        else if (Input.GetKeyDown(KeyCode.LeftArrow))
-        {
-            gameManager.MoveAndMerge(MoveDirection.Left);
 
-        }
-        else if (Input.GetKeyDown(KeyCode.UpArrow))
-        {
-            gameManager.MoveAndMerge(MoveDirection.Up);
+            if (Input.GetKeyDown(KeyCode.RightArrow))
+            {
+                gameManager.MoveAndMerge(MoveDirection.Right);
+            }
+            else if (Input.GetKeyDown(KeyCode.LeftArrow))
+            {
+                gameManager.MoveAndMerge(MoveDirection.Left);
 
-        }
-        else if (Input.GetKeyDown(KeyCode.DownArrow))
-        {
-            gameManager.MoveAndMerge(MoveDirection.Down);
+            }
+            else if (Input.GetKeyDown(KeyCode.UpArrow))
+            {
+                gameManager.MoveAndMerge(MoveDirection.Up);
 
+            }
+            else if (Input.GetKeyDown(KeyCode.DownArrow))
+            {
+                gameManager.MoveAndMerge(MoveDirection.Down);
+
+            }
         }
     }
 }

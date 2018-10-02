@@ -1,18 +1,39 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+public enum GameState
+{
+    Playing,
+    WaitingForMoveToEnd,
+    GameOver
+}
+
 public class GameManagerScript : MonoBehaviour
 {
+    public static GameManagerScript INSTANCE;
+
     public GameObject gameOverPanel;
+    public GameState state;
+    [Range(0, 1f)] public float delay = 0.1f;
+
+    private bool isMoveMade = false;
+    private bool[] lineMoveComplete = new bool[4] { true, true, true, true };
 
     private TileScript[,] allTiles = new TileScript[4, 4]; // all tiles
-
     private List<TileScript[]> columns = new List<TileScript[]>(); // holds all cols details
     private List<TileScript[]> rows = new List<TileScript[]>(); // holds all rows details
-
     private List<TileScript> emptyTiles = new List<TileScript>(); // list of empty tiles
+
+    private void Awake()
+    {
+        if (INSTANCE == null)
+            INSTANCE = this;
+        else
+            Destroy(gameObject);
+    }
 
     // Use this for initialization
     void Start()
@@ -59,13 +80,14 @@ public class GameManagerScript : MonoBehaviour
         if (emptyTiles.Count > 0)
         {
             // pick index for random number tile;
-            int indexForNewNumber = Random.Range(0, emptyTiles.Count);
-            int randomNumber = Random.Range(0, 10);
+            int indexForNewNumber = UnityEngine.Random.Range(0, emptyTiles.Count);
+            int randomNumber = UnityEngine.Random.Range(0, 10);
             if (randomNumber > 8) // around 20% chances
                 emptyTiles[indexForNewNumber].Number = 4;
             else
                 emptyTiles[indexForNewNumber].Number = 2;
             emptyTiles.RemoveAt(indexForNewNumber);
+
             return true;
         }
         return false;
@@ -73,15 +95,19 @@ public class GameManagerScript : MonoBehaviour
 
     private void UpdateEmptyTiles()
     {
-        if (emptyTiles.Count == 0)
-            gameOverPanel.SetActive(true);
-
         emptyTiles.Clear();
         foreach (TileScript tile in allTiles)
         {
             if (tile.Number == 0)
                 emptyTiles.Add(tile);
         }
+
+        if (emptyTiles.Count == 0)
+        {
+            state = GameState.GameOver;
+            GameOver();
+        }
+
     }
 
     private void ResetMergeTags()
@@ -93,36 +119,110 @@ public class GameManagerScript : MonoBehaviour
     #region MOVE  AND MERGE MECHANISM -----------------------------------------------------
     public void MoveAndMerge(MoveDirection _direction)
     {
-        bool moveMade = false;
+        isMoveMade = false;
         ResetMergeTags();
-        for (int i = 0; i < rows.Count; i++)
+
+        if (delay > 0)
+            StartCoroutine(Co_MoveAndMerge(_direction));
+        else
         {
-            switch (_direction)
+            for (int i = 0; i < rows.Count; i++)
             {
-                case MoveDirection.Down:
-                    while (MakeOneMoveUpIndex(columns[i])) { moveMade = true; }
-                    break;
+                switch (_direction)
+                {
+                    case MoveDirection.Down:
+                        while (MakeOneMoveUpIndex(columns[i])) { isMoveMade = true; }
+                        break;
 
-                case MoveDirection.Right:
-                    while (MakeOneMoveUpIndex(rows[i])) { moveMade = true; }
-                    break;
+                    case MoveDirection.Right:
+                        while (MakeOneMoveUpIndex(rows[i])) { isMoveMade = true; }
+                        break;
 
-                case MoveDirection.Left:
-                    while (MakeOneMoveDownIndex(rows[i])) { moveMade = true; }
-                    break;
+                    case MoveDirection.Left:
+                        while (MakeOneMoveDownIndex(rows[i])) { isMoveMade = true; }
+                        break;
 
-                case MoveDirection.Up:
-                    while (MakeOneMoveDownIndex(columns[i])) { moveMade = true; }
-                    break;
+                    case MoveDirection.Up:
+                        while (MakeOneMoveDownIndex(columns[i])) { isMoveMade = true; }
+                        break;
+                }
             }
-        }
-        if (moveMade)
-        {
-            UpdateEmptyTiles();
-            GenerateTile();
+
+            if (isMoveMade)
+            {
+                UpdateEmptyTiles();
+                GenerateTile();
+            }
         }
     }
 
+    #region COROUTINES
+    private IEnumerator Co_MoveAndMerge(MoveDirection _direction)
+    {
+        state = GameState.WaitingForMoveToEnd;
+
+        // move each line waith delays depending on the move direction
+        switch (_direction)
+        {
+            case MoveDirection.Down:
+                for (int i = 0; i < columns.Count; i++)
+                    StartCoroutine(Co_MoveOneLineUpIndex(columns[i], i));
+                break;
+            case MoveDirection.Right:
+                for (int i = 0; i < rows.Count; i++)
+                    StartCoroutine(Co_MoveOneLineUpIndex(rows[i], i));
+                break;
+            case MoveDirection.Left:
+                for (int i = 0; i < rows.Count; i++)
+                    StartCoroutine(Co_MoveOneLineDownIndex(rows[i], i));
+                break;
+            case MoveDirection.Up:
+                for (int i = 0; i < columns.Count; i++)
+                    StartCoroutine(Co_MoveOneLineDownIndex(columns[i], i));
+                break;
+        }
+
+        // Wait until the move is over in all lines
+        while (!(lineMoveComplete[0]
+              && lineMoveComplete[1]
+              && lineMoveComplete[2]
+                 && lineMoveComplete[3]))
+            yield return null;
+
+        if (isMoveMade)
+        {
+            UpdateEmptyTiles();
+            GenerateTile();
+
+            if (state == GameState.GameOver)
+                GameOver();
+            else
+                state = GameState.Playing;
+        }
+    }
+
+    private IEnumerator Co_MoveOneLineDownIndex(TileScript[] tile, int index)
+    {
+        lineMoveComplete[index] = false;
+        while (MakeOneMoveDownIndex(tile))
+        {
+            isMoveMade = true;
+            yield return new WaitForSeconds(delay);
+        }
+        lineMoveComplete[index] = true;
+    }
+
+    private IEnumerator Co_MoveOneLineUpIndex(TileScript[] tile, int index)
+    {
+        lineMoveComplete[index] = false;
+        while (MakeOneMoveUpIndex(tile))
+        {
+            isMoveMade = true;
+            yield return new WaitForSeconds(delay);
+        }
+        lineMoveComplete[index] = true;
+    }
+    #endregion
 
     bool MakeOneMoveDownIndex(TileScript[] _lineOfTiles)
     {
@@ -185,6 +285,10 @@ public class GameManagerScript : MonoBehaviour
     }
     #endregion
 
+    private void GameOver()
+    {
+        gameOverPanel.SetActive(true);
+    }
 
     public void NewGame_Btn()
     {

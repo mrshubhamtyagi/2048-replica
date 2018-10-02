@@ -79,6 +79,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gameOverPanel: {fileID: 0}
+  state: 0
+  delay: 0.03
 --- !u!114 &114920948330935772
 MonoBehaviour:
   m_ObjectHideFlags: 1
