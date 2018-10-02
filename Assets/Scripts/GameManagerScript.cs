@@ -1,9 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManagerScript : MonoBehaviour
 {
+    public GameObject gameOverPanel;
+
     private TileScript[,] allTiles = new TileScript[4, 4]; // all tiles
 
     private List<TileScript[]> columns = new List<TileScript[]>(); // holds all cols details
@@ -14,6 +17,8 @@ public class GameManagerScript : MonoBehaviour
     // Use this for initialization
     void Start()
     {
+        gameOverPanel.SetActive(false);
+
         // set all tiles number's to 0 and add them to empty tiles list
         TileScript[] allTilesOnDimention = FindObjectsOfType<TileScript>();
         foreach (TileScript tile in allTilesOnDimention)
@@ -68,15 +73,21 @@ public class GameManagerScript : MonoBehaviour
 
     private void UpdateEmptyTiles()
     {
+        if (emptyTiles.Count == 0)
+            gameOverPanel.SetActive(true);
+
         emptyTiles.Clear();
         foreach (TileScript tile in allTiles)
         {
             if (tile.Number == 0)
                 emptyTiles.Add(tile);
         }
-        print("Empty Tiles ---->> " + emptyTiles.Count);
-        if (emptyTiles.Count == 0)
-            print("Game Over");
+    }
+
+    private void ResetMergeTags()
+    {
+        foreach (TileScript tile in allTiles)
+            tile.hasMergedAlready = false;
     }
 
     #region MOVE  AND MERGE MECHANISM -----------------------------------------------------
@@ -136,6 +147,7 @@ public class GameManagerScript : MonoBehaviour
                 _lineOfTiles[i].Number *= 2;
                 _lineOfTiles[i + 1].Number = 0;
                 _lineOfTiles[i].hasMergedAlready = true;
+                ScoreManager.INSTANCE.UpdateCurrentScore(_lineOfTiles[i].Number); //  Update Score
                 return true;
             }
         }
@@ -165,6 +177,7 @@ public class GameManagerScript : MonoBehaviour
                 _lineOfTiles[i].Number *= 2;
                 _lineOfTiles[i - 1].Number = 0;
                 _lineOfTiles[i].hasMergedAlready = true;
+                ScoreManager.INSTANCE.UpdateCurrentScore(_lineOfTiles[i].Number); //  Update Score
                 return true;
             }
         }
@@ -172,9 +185,9 @@ public class GameManagerScript : MonoBehaviour
     }
     #endregion
 
-    private void ResetMergeTags()
+
+    public void NewGame_Btn()
     {
-        foreach (TileScript tile in allTiles)
-            tile.hasMergedAlready = false;
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }
